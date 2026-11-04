@@ -1,5 +1,5 @@
 import { getEmoji } from '../handlers/emoji.js';
-import { handleLinkModal, handleLinkPromptButton } from '../commands/questCommands.js';
+import { handleLinkModal, handleLinkPromptButton, handleSelectMenu, handleQuestButton } from '../commands/questCommands.js';
 
 export default {
     name: 'interactionCreate',
@@ -15,6 +15,32 @@ export default {
         // Button: link_prompt (opens modal)
         if (interaction.isButton() && interaction.customId === 'link_prompt') {
             await handleLinkPromptButton(interaction);
+            return;
+        }
+
+        // Select Menu: Quest selection dropdown
+        if (interaction.isStringSelectMenu()) {
+            try {
+                await handleSelectMenu(interaction, client);
+            } catch (err) {
+                console.error(err);
+                if (!interaction.replied && !interaction.deferred) {
+                    await interaction.reply({ content: `${getEmoji('error')} Error processing selection.`, flags: 64 }).catch(() => {});
+                }
+            }
+            return;
+        }
+
+        // Button: Quest actions / pagination buttons
+        if (interaction.isButton()) {
+            try {
+                await handleQuestButton(interaction, client);
+            } catch (err) {
+                console.error(err);
+                if (!interaction.replied && !interaction.deferred) {
+                    await interaction.reply({ content: `${getEmoji('error')} Error processing button.`, flags: 64 }).catch(() => {});
+                }
+            }
             return;
         }
 
