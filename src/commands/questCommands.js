@@ -41,6 +41,14 @@ function isValidUserToken(token) {
     return token.length >= 50 && /^[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+$/.test(token);
 }
 
+function getDynamicBar(percent) {
+    if (percent === 0) return '`░░░░░░░░░░`  **0%**  —  *Working on it...*';
+    const filled = Math.floor(percent / 10);
+    const empty = 10 - filled;
+    const bar = '█'.repeat(filled) + '░'.repeat(empty);
+    return `\`${bar}\`  **${percent}%**  —  *Processing...*`;
+}
+
 // ── UI Builders (Component V2) ─────────────────────────────────────────────
 
 function buildLinkModal() {
@@ -155,7 +163,7 @@ function buildQuestSelectCard(quests) {
     return { components: [c], flags: MessageFlags.IsComponentsV2 };
 }
 
-function buildQuestInfoCard(quest, phase, claimed = 0, failReason = '') {
+function buildQuestInfoCard(quest, phase, claimed = 0, failReason = '', currentPercent = 0) {
     const cfg  = quest.config;
     const msgs = cfg.messages;
     const appId = cfg.application.id;
@@ -193,7 +201,7 @@ function buildQuestInfoCard(quest, phase, claimed = 0, failReason = '') {
     const daysLeft = Math.max(0, Math.ceil((new Date(cfg.expires_at).getTime() - Date.now()) / 86400000));
 
     const PHASE = {
-        starting: { color: 0x5865F2, title: '⚙️  Solving Quest...',  bar: '`░░░░░░░░░░`  **0%**  —  *Working on it...*' },
+        starting: { color: 0x5865F2, title: '⚙️  Solving Quest...',  bar: getDynamicBar(currentPercent) },
         done:     { color: 0x57F287, title: '✅  Quest Complete!',    bar: '`██████████`  **100%**' },
         failed:   { color: 0xED4245, title: '❌  Quest Failed',       bar: '' },
     };
@@ -275,10 +283,15 @@ async function runQuestOne(userId, tokenStore, send) {
         await selMsg.edit({ components: [], flags: MessageFlags.IsComponentsV2 });
 
         const quest = valid.find((q) => q.id === selectedId);
-        const progressMsg = await send(buildQuestInfoCard(quest, 'starting'));
+        const progressMsg = await send(buildQuestInfoCard(quest, 'starting', 0, '', 10));
 
         const logs = [];
         const log = (m) => { console.log(m); logs.push(m); };
+
+        await progressMsg.edit(buildQuestInfoCard(quest, 'starting', 0, '', 30)).catch(() => {});
+        await new Promise(r => setTimeout(r, 1500));
+
+        await progressMsg.edit(buildQuestInfoCard(quest, 'starting', 0, '', 60)).catch(() => {});
         const questDone = await manager.doingQuest(quest, log);
 
         if (!questDone) {
@@ -287,6 +300,7 @@ async function runQuestOne(userId, tokenStore, send) {
             return false;
         }
 
+        await progressMsg.edit(buildQuestInfoCard(quest, 'starting', 0, '', 90)).catch(() => {});
         const claimed = await manager.claimRewards(log).catch(() => 0);
         await progressMsg.edit(buildQuestInfoCard(quest, 'done', claimed));
         return true;
@@ -313,7 +327,7 @@ async function runQuestAll(userId, tokenStore, send) {
         const valid = manager.filterQuestsValid();
         if (valid.length === 0) { await send(buildNoQuestsCard()); return false; }
 
-        const progressMsgs = await Promise.all(valid.map((q) => send(buildQuestInfoCard(q, 'starting'))));
+        const progressMsgs = await Promise.all(valid.map((q) => send(buildQuestInfoCard(q, 'starting', 0, '', 20))));
 
         const questLogs = valid.map(() => []);
         const questResults = await Promise.allSettled(
@@ -792,10 +806,15 @@ export async function handleSelectMenu(interaction, client) {
         }
 
         await interaction.update({ components: [], flags: MessageFlags.IsComponentsV2 }).catch(() => {});
-        const progressMsg = await interaction.channel.send(buildQuestInfoCard(quest, 'starting'));
+        const progressMsg = await interaction.channel.send(buildQuestInfoCard(quest, 'starting', 0, '', 10));
 
         const logs = [];
         const log = (m) => { console.log(m); logs.push(m); };
+
+        await progressMsg.edit(buildQuestInfoCard(quest, 'starting', 0, '', 40)).catch(() => {});
+        await new Promise(r => setTimeout(r, 1500));
+
+        await progressMsg.edit(buildQuestInfoCard(quest, 'starting', 0, '', 70)).catch(() => {});
         const questDone = await manager.doingQuest(quest, log);
 
         if (!questDone) {
