@@ -765,8 +765,43 @@ export async function runAutoquestForUser(userId, quest, tokenStore, discordClie
             } catch {}
         }
     }
-    
-      }
+    // ── AutoQuest runner (called from questWatcher) ────────────────────────────
+export async function runAutoquestForUser(userId, quest, tokenStore, discordClient) {
+    const token = tokenStore.get(userId);
+    if (!token) { disableAutoquest(userId); return; }
+
+    const { QuestClient: QC } = await import('../quest/questClient.js');
+    const { Quest: Q } = await import('../quest/quest.js');
+    const qc = new QC(token);
+    const logs = [];
+    const log = (m) => { console.log(`[AutoQuest:${userId}]`, m); logs.push(m); };
+
+    try {
+        const manager = await qc.fetchQuests();
+        let live = manager.get(quest.id);
+        if (!live) {
+            live = Q.create({ id: quest.id, config: quest.config, user_status: null, targeted_content: quest.targetedContent, preview: quest.preview });
+        }
+        if (live.isCompleted() || live.isExpired()) return;
+
+        await manager.doingQuest(live, log);
+
+        let claimManager = manager;
+        try { claimManager = await qc.fetchQuests(); } catch { if (!manager.hasQuest(live.id)) manager.upsert(live); }
+
+        const claimed = await claimManager.claimRewards(log).catch(() => 0);
+
+        try {
+            const user = await discordClient.users.fetch(userId);
+            const dm = await user.createDM();
+            const c = new ContainerBuilder().setAccentColor(0x57F287);
+            c.addTextDisplayComponents(
+                new TextDisplayBuilder().setContent(
+                    `# 🤖 Auto-Quest Complete!\n**${live.config.messages.quest_name}** has been completed automatically.\n${claimed > 0 ? `🎁 **${claimed}** reward(s) claimed.\n` : ''}\nUse \`${PREFIX}autoquest\` to disable.`,
+                ),
+            );
+            await dm.send({ components: [c], flags: MessageFlags.IsComponentsV2 });
+        } catch {}
 
     } catch (err) {
         const msg = err?.message ?? String(err);
@@ -783,9 +818,9 @@ export async function runAutoquestForUser(userId, quest, tokenStore, discordClie
             } catch {}
         }
     }
-} // <-- Yahan runAutoquestForUser khatam hota hai (Line 768)
+}
 
-// ── AB ISKE NEECHEY NAYE HANDLERS DALNE HAIN ────────────────────────
+// ── Select Menu & Button Handlers (called from interactionCreate) ──────────
 
 export async function handleSelectMenu(interaction, client) {
     const userId = interaction.user.id;
@@ -836,4 +871,3 @@ export async function handleQuestButton(interaction, client) {
         await interaction.deferUpdate().catch(() => {});
     }
 }
-
