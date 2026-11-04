@@ -18,8 +18,8 @@ export default {
     once: true,
     async execute(client) {
         client.user.setPresence({
-            activities: [{ name: `XEON DEV QUESTER | ${PREFIX}help`, type: ActivityType.Watching }],
-            status: 'online',
+            activities: [{ name: `VOIDY DEV QUESTER | ${PREFIX}help`, type: ActivityType.Watching }],
+            status: 'DoNotDisturb',
         });
 
         console.log(line);
