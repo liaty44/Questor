@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import http from 'http';
 import { Client, GatewayIntentBits, Collection, Partials } from 'discord.js';
 import { readdirSync } from 'fs';
 import { fileURLToPath, pathToFileURL } from 'url';
@@ -9,6 +10,17 @@ import { writeFileSync, existsSync } from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = dirname(__filename);
+
+// Render ke liye ek chota sa dummy server taaki port open rahe
+const server = http.createServer((req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('Bot is alive and running!\n');
+});
+
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+    console.log(`HTTP server is listening on port ${PORT}`);
+});
 
 const col = {
     reset:  '\x1b[0m', bright: '\x1b[1m', cyan: '\x1b[96m',
