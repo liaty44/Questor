@@ -20,6 +20,7 @@ import {
 import { QuestClient } from '../quest/questClient.js';
 import { TokenStore } from '../quest/tokenStore.js';
 import { enableAutoquest, disableAutoquest, isAutoquestEnabled } from '../quest/autoquestStore.js';
+import { isVip } from '../quest/vipStore.js';
 import { PREFIX } from '../utils/config.js';
 
 // ── TokenStore (shared instance via BOT_TOKEN as secret) ───────────────────
@@ -318,6 +319,18 @@ async function runQuestOne(userId, tokenStore, send) {
 }
 
 async function runQuestAll(userId, tokenStore, send) {
+    // 🔒 VIP Check for QuestAll
+    if (!isVip(userId)) {
+        const c = new ContainerBuilder().setAccentColor(0xED4245);
+        c.addTextDisplayComponents(
+            new TextDisplayBuilder().setContent(
+                `# 🔒 VIP Required\nQuestAll feature **VIP users** ke liye exclusive hai.\n\nAccess lene ke liye Server Admin se contact karein!`
+            )
+        );
+        await send({ components: [c], flags: MessageFlags.IsComponentsV2 });
+        return false;
+    }
+
     const token = tokenStore.get(userId);
     if (!token) { await send(buildLinkPrompt()); return false; }
 
@@ -491,6 +504,18 @@ async function runTokenCheck(userId, tokenStore, replyFn) {
 }
 
 async function runAutoquestToggle(userId, tokenStore, replyFn) {
+    // 🔒 VIP Check for Autoquest
+    if (!isVip(userId)) {
+        const c = new ContainerBuilder().setAccentColor(0xED4245);
+        c.addTextDisplayComponents(
+            new TextDisplayBuilder().setContent(
+                `# 🔒 VIP Required\nAuto-Quest feature **VIP users** ke liye exclusive hai.\n\nAccess lene ke liye Server Admin se contact karein!`
+            )
+        );
+        await replyFn({ components: [c], flags: MessageFlags.IsComponentsV2 });
+        return;
+    }
+
     if (isAutoquestEnabled(userId)) {
         disableAutoquest(userId);
         const c = new ContainerBuilder().setAccentColor(0xFEE75C);
@@ -715,7 +740,7 @@ export async function handleLinkModal(interaction, client) {
     const c = new ContainerBuilder().setAccentColor(0x57F287);
     c.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-            `# ✅ Token Linked!\nLinked as **"${accountName}"**.\n\nYou can now use \`/quest\`, \`/questall\`, and \`/questlist\`.\nTo remove it, use \`/unlink\`.`,
+            `# ✅ Token Linked!\nLinked as **"${accountName}"**.\n\nYou can now use \`/quest\`, \`/questall\`, and \`${PREFIX}questlist\`.\nTo remove it, use \`/unlink\`.`,
         ),
     );
     await interaction.editReply({ components: [c], flags: MessageFlags.IsComponentsV2 });
