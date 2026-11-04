@@ -765,4 +765,75 @@ export async function runAutoquestForUser(userId, quest, tokenStore, discordClie
             } catch {}
         }
     }
+    
       }
+
+    } catch (err) {
+        const msg = err?.message ?? String(err);
+        console.error(`[AutoQuest:${userId}] Error:`, msg);
+        if (msg.includes('401')) {
+            tokenStore.remove(userId);
+            disableAutoquest(userId);
+            try {
+                const user = await discordClient.users.fetch(userId);
+                const dm = await user.createDM();
+                const c = new ContainerBuilder().setAccentColor(0xED4245);
+                c.addTextDisplayComponents(new TextDisplayBuilder().setContent(`# 🤖 Auto-Quest Paused\nYour saved token expired. Run \`${PREFIX}link\` to re-link, then \`${PREFIX}autoquest\` to re-enable.`));
+                await dm.send({ components: [c], flags: MessageFlags.IsComponentsV2 });
+            } catch {}
+        }
+    }
+} // <-- Yahan runAutoquestForUser khatam hota hai (Line 768)
+
+// ── AB ISKE NEECHEY NAYE HANDLERS DALNE HAIN ────────────────────────
+
+export async function handleSelectMenu(interaction, client) {
+    const userId = interaction.user.id;
+    const ts = client.tokenStore;
+    const token = ts.get(userId);
+    if (!token) {
+        await interaction.reply({ content: 'Token not found. Please link your token first.', flags: 64 });
+        return;
+    }
+
+    const selectedId = interaction.values[0];
+    const qc = new QuestClient(token);
+    
+    try {
+        const manager = await qc.fetchQuests();
+        const valid = manager.filterQuestsValid();
+        const quest = valid.find((q) => q.id === selectedId);
+
+        if (!quest) {
+            await interaction.reply({ content: 'Quest not found or expired.', flags: 64 });
+            return;
+        }
+
+        await interaction.update({ components: [], flags: MessageFlags.IsComponentsV2 }).catch(() => {});
+        const progressMsg = await interaction.channel.send(buildQuestInfoCard(quest, 'starting'));
+
+        const logs = [];
+        const log = (m) => { console.log(m); logs.push(m); };
+        const questDone = await manager.doingQuest(quest, log);
+
+        if (!questDone) {
+            const failReason = logs.filter(l => l.startsWith('[FAIL]')).slice(-2).join('\n') || logs.slice(-3).join('\n') || 'Could not be completed automatically.';
+            await progressMsg.edit(buildQuestInfoCard(quest, 'failed', 0, failReason)).catch(() => {});
+            return;
+        }
+
+        const claimed = await manager.claimRewards(log).catch(() => 0);
+        await progressMsg.edit(buildQuestInfoCard(quest, 'done', claimed)).catch(() => {});
+
+    } catch (err) {
+        console.error(err);
+        await interaction.followUp({ content: 'An error occurred while processing the quest.', flags: 64 }).catch(() => {});
+    }
+}
+
+export async function handleQuestButton(interaction, client) {
+    if (!interaction.replied && !interaction.deferred) {
+        await interaction.deferUpdate().catch(() => {});
+    }
+}
+
