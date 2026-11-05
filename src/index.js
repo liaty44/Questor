@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import http from 'http';
-import { Client, GatewayIntentBits, Collection, Partials } from 'discord.js';
+import { Client, GatewayIntentBits, Collection, Partials, ActivityType } from 'discord.js';
 import { readdirSync } from 'fs';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { dirname, join } from 'path';
@@ -39,7 +39,7 @@ function banner() {
         `${col.white}${col.bright}   ╚══▀▀═╝  ╚═════╝  ╚═══╝   ╚═╝${col.reset}`,
         '',
         `${col.dim}  ─────────────────────────────────────────────────${col.reset}`,
-        `  ${col.green}●${col.reset} ${col.white}XEON QUESTER${col.reset}  ${col.dim}|${col.reset}   ${col.white}XEON DEVELOPMENT${col.reset}`,
+        `  ${col.green}●${col.reset} ${col.white}SPIKE.LOL QUESTER${col.reset}  ${col.dim}|${col.reset}   ${col.white}SPIKE DEVELOPMENT${col.reset}`,
         `${col.dim}  ─────────────────────────────────────────────────${col.reset}`,
         '',
     ];
@@ -97,5 +97,15 @@ for (const file of eventFiles) {
         client.on(event.name, (...args) => event.execute(...args, client));
     }
 }
+
+// Bot ready event par status set karne ke liye
+client.once('ready', () => {
+    console.log(`[READY] Bot successfully logged in as ${client.user.tag}`);
+    
+    // Watching status set kar diya hai
+    client.user.setActivity('.gg/spike.lol', { 
+        type: ActivityType.Watching 
+    });
+});
 
 client.login(TOKEN);
