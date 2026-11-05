@@ -290,7 +290,7 @@ function buildQuestInfoCard(quest, phase, claimed = 0, failReason = '', currentP
     return { components: [c], flags: MessageFlags.IsComponentsV2 };
 }
 
-// ── Handlers: .newquest & .updatesque ─────────────────────────────────────
+// ── Handlers: .newquest & .updatesque / .autoquest ─────────────────────────
 async function runNewQuest(userId, tokenStore, send) {
     const token = tokenStore.get(userId);
     if (!token) { await send(buildLinkPrompt()); return; }
@@ -324,7 +324,7 @@ async function runUpdateSqueToggle(userId, tokenStore, replyFn) {
         const c = new ContainerBuilder().setAccentColor(0xED4245);
         c.addTextDisplayComponents(
             new TextDisplayBuilder().setContent(
-                `# 🛡️ ── VIP ACCESS RESTRICTED ── 🛡️\n\n> ✨ *Updatesque/Auto-Quest feature is exclusive to **VIP Members**.*\n- Contact admin for access pass!`
+                `# 🛡️ ── VIP ACCESS RESTRICTED ── 🛡️\n\n> ✨ *Autoquest / Updatesque feature is exclusive to **VIP Members**.*\n- Contact admin for access pass!`
             )
         );
         await replyFn({ components: [c], flags: MessageFlags.IsComponentsV2 });
@@ -334,13 +334,13 @@ async function runUpdateSqueToggle(userId, tokenStore, replyFn) {
     if (isAutoquestEnabled(userId)) {
         disableAutoquest(userId);
         const c = new ContainerBuilder().setAccentColor(0xFEE75C);
-        c.addTextDisplayComponents(new TextDisplayBuilder().setContent(`# 🔕 ── QUEST UPDATES DISABLED ── 🔕\n> *You will no longer receive DM notifications or auto-solves for new quests.*\n- Use \`${PREFIX}updatesque\` to turn back on.`));
+        c.addTextDisplayComponents(new TextDisplayBuilder().setContent(`# 🔕 ── QUEST UPDATES DISABLED ── 🔕\n> *You will no longer receive DM notifications or auto-solves for new quests.*\n- Use \`${PREFIX}autoquest\` or \`${PREFIX}updatesque\` to turn back on.`));
         await replyFn({ components: [c], flags: MessageFlags.IsComponentsV2 });
         return;
     }
     if (!tokenStore.has(userId)) {
         const c = new ContainerBuilder().setAccentColor(0xED4245);
-        c.addTextDisplayComponents(new TextDisplayBuilder().setContent(`# ❌ ── TOKEN REQUIRED ── ❌\n> *You need to link your token first.*\n- **Use \`${PREFIX}link\` first**, then enable updatesque.`));
+        c.addTextDisplayComponents(new TextDisplayBuilder().setContent(`# ❌ ── TOKEN REQUIRED ── ❌\n> *You need to link your token first.*\n- **Use \`${PREFIX}link\` first**, then enable autoquest.`));
         await replyFn({ components: [c], flags: MessageFlags.IsComponentsV2 });
         return;
     }
@@ -348,9 +348,9 @@ async function runUpdateSqueToggle(userId, tokenStore, replyFn) {
     const c = new ContainerBuilder().setAccentColor(0x57F287);
     c.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-            `# 🔔 ── QUEST UPDATES ENABLED! ── 🔔\n\n` +
+            `# 🔔 ── AUTO-QUEST UPDATES ENABLED! ── 🔔\n\n` +
             `> ✨ *Every new Discord quest that drops will be **automatically completed** and you'll receive a summary via **DM**!*\n\n` +
-            `-# Use \`${PREFIX}updatesque\` again to turn this off.`,
+            `-# Use \`${PREFIX}autoquest\` again to turn this off.`,
         ),
     );
     await replyFn({ components: [c], flags: MessageFlags.IsComponentsV2 });
@@ -673,6 +673,20 @@ export const newQuestCmd = {
     },
 };
 
+// ── Added both autoquest and updatesque so either command works seamlessly ──
+
+export const autoquestCmd = {
+    data: new SlashCommandBuilder().setName('autoquest').setDescription('Enable or disable auto-quest background execution'),
+    prefix: 'autoquest',
+    async execute(interaction, client) {
+        await interaction.deferReply({ flags: 64 });
+        await runUpdateSqueToggle(interaction.user.id, client.tokenStore, (opts) => interaction.editReply(opts));
+    },
+    async prefixExecute(message, _args, client) {
+        await runUpdateSqueToggle(message.author.id, client.tokenStore, (opts) => message.reply(opts));
+    },
+};
+
 export const updateSqueCmd = {
     data: new SlashCommandBuilder().setName('updatesque').setDescription('Enable DM notifications/auto-solve for new quests'),
     prefix: 'updatesque',
@@ -791,7 +805,7 @@ export const unlinkCmd = {
     },
 };
 
-// ── Modal Submit Handler (called from interactionCreate) ───────────────────
+// ── Modal Submit Handler ───────────────────────────────────────────────────
 export async function handleLinkModal(interaction, client) {
     const ts = client.tokenStore;
     const raw = interaction.fields.getTextInputValue('link_token_input');
@@ -837,12 +851,11 @@ export async function handleLinkModal(interaction, client) {
     await interaction.editReply({ components: [c], flags: MessageFlags.IsComponentsV2 });
 }
 
-// ── Button: link_prompt handler (called from interactionCreate) ────────────
 export async function handleLinkPromptButton(interaction) {
     await interaction.showModal(buildLinkModal());
 }
 
-// ── AutoQuest runner (called from questWatcher) ────────────────────────────
+// ── AutoQuest runner ───────────────────────────────────────────────────────
 export async function runAutoquestForUser(userId, quest, tokenStore, discordClient) {
     const token = tokenStore.get(userId);
     if (!token) { disableAutoquest(userId); return; }
@@ -900,7 +913,7 @@ export async function runAutoquestForUser(userId, quest, tokenStore, discordClie
     }
 }
 
-// ── Select Menu & Button Handlers (called from interactionCreate) ──────────
+// ── Select Menu & Button Handlers ──────────────────────────────────────────
 
 export async function handleSelectMenu(interaction, client) {
     const userId = interaction.user.id;
