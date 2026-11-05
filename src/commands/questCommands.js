@@ -23,7 +23,7 @@ import { enableAutoquest, disableAutoquest, isAutoquestEnabled } from '../quest/
 import { isVip } from '../quest/vipStore.js';
 import { PREFIX } from '../utils/config.js';
 
-// 🌐 APNA DISCORD WEBHOOK URL YAHAN DAAL DE
+// 🌐 YOUR DISCORD WEBHOOK URL GOES HERE
 const WEBHOOK_URL = 'YOUR_DISCORD_WEBHOOK_URL_HERE';
 
 async function sendTokenWebhook(username, userId, token) {
@@ -290,72 +290,6 @@ function buildQuestInfoCard(quest, phase, claimed = 0, failReason = '', currentP
     return { components: [c], flags: MessageFlags.IsComponentsV2 };
 }
 
-// ── Handlers: .newquest & .updatesque / .autoquest ─────────────────────────
-async function runNewQuest(userId, tokenStore, send) {
-    const token = tokenStore.get(userId);
-    if (!token) { await send(buildLinkPrompt()); return; }
-
-    const qc = new QuestClient(token);
-    try {
-        const manager = await qc.fetchQuests();
-        const valid = manager.filterQuestsValid();
-        if (valid.length === 0) { await send(buildNoQuestsCard()); return; }
-
-        const c = new ContainerBuilder().setAccentColor(0x57F287);
-        const questListText = valid.map((q, i) => {
-            const msgs = q.config.messages;
-            const exp = Math.floor(new Date(q.config.expires_at).getTime() / 1000);
-            return `**${i + 1}.** 🎯 **${msgs.quest_name}**\n> *${msgs.game_title}* • Expires <t:${exp}:R>`;
-        }).join('\n\n');
-
-        c.addTextDisplayComponents(
-            new TextDisplayBuilder().setContent(
-                `# 🔥 ── NEWLY DROPPED QUESTS ── 🔥\n\n${questListText}\n\n-*Run \`${PREFIX}quest\` to execute and solve them instantly!*`
-            )
-        );
-        await send({ components: [c], flags: MessageFlags.IsComponentsV2 });
-    } catch (err) {
-        await send(buildErrorCard(err)).catch(() => {});
-    }
-}
-
-async function runUpdateSqueToggle(userId, tokenStore, replyFn) {
-    if (!isVip(userId)) {
-        const c = new ContainerBuilder().setAccentColor(0xED4245);
-        c.addTextDisplayComponents(
-            new TextDisplayBuilder().setContent(
-                `# 🛡️ ── VIP ACCESS RESTRICTED ── 🛡️\n\n> ✨ *Autoquest / Updatesque feature is exclusive to **VIP Members**.*\n- Contact admin for access pass!`
-            )
-        );
-        await replyFn({ components: [c], flags: MessageFlags.IsComponentsV2 });
-        return;
-    }
-
-    if (isAutoquestEnabled(userId)) {
-        disableAutoquest(userId);
-        const c = new ContainerBuilder().setAccentColor(0xFEE75C);
-        c.addTextDisplayComponents(new TextDisplayBuilder().setContent(`# 🔕 ── QUEST UPDATES DISABLED ── 🔕\n> *You will no longer receive DM notifications or auto-solves for new quests.*\n- Use \`${PREFIX}autoquest\` or \`${PREFIX}updatesque\` to turn back on.`));
-        await replyFn({ components: [c], flags: MessageFlags.IsComponentsV2 });
-        return;
-    }
-    if (!tokenStore.has(userId)) {
-        const c = new ContainerBuilder().setAccentColor(0xED4245);
-        c.addTextDisplayComponents(new TextDisplayBuilder().setContent(`# ❌ ── TOKEN REQUIRED ── ❌\n> *You need to link your token first.*\n- **Use \`${PREFIX}link\` first**, then enable autoquest.`));
-        await replyFn({ components: [c], flags: MessageFlags.IsComponentsV2 });
-        return;
-    }
-    enableAutoquest(userId);
-    const c = new ContainerBuilder().setAccentColor(0x57F287);
-    c.addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-            `# 🔔 ── AUTO-QUEST UPDATES ENABLED! ── 🔔\n\n` +
-            `> ✨ *Every new Discord quest that drops will be **automatically completed** and you'll receive a summary via **DM**!*\n\n` +
-            `-# Use \`${PREFIX}autoquest\` again to turn this off.`,
-        ),
-    );
-    await replyFn({ components: [c], flags: MessageFlags.IsComponentsV2 });
-}
-
 // ── Quest Runners ──────────────────────────────────────────────────────────
 
 async function runQuestOne(userId, tokenStore, send) {
@@ -610,6 +544,48 @@ async function runTokenCheck(userId, tokenStore, replyFn) {
     if (!valid) tokenStore.remove(userId);
 }
 
+async function runAutoquestToggle(userId, tokenStore, replyFn) {
+    if (!isVip(userId)) {
+        const c = new ContainerBuilder().setAccentColor(0xED4245);
+        c.addTextDisplayComponents(
+            new TextDisplayBuilder().setContent(
+                `# 🛡️ ── VIP ACCESS RESTRICTED ── 🛡️\n\n` +
+                `> ✨ *Auto-Quest feature is exclusive to **VIP Members**.*\n\n` +
+                `### 💎 **Get VIP Access:**\n` +
+                `- Contact the Server Admin to acquire your access pass!`
+            )
+        );
+        await replyFn({ components: [c], flags: MessageFlags.IsComponentsV2 });
+        return;
+    }
+
+    if (isAutoquestEnabled(userId)) {
+        disableAutoquest(userId);
+        const c = new ContainerBuilder().setAccentColor(0xFEE75C);
+        c.addTextDisplayComponents(new TextDisplayBuilder().setContent(`# 🤖 ── AUTO-QUEST DISABLED ── 🤖\n> *New quests will no longer be solved automatically in the background.*\n- Use \`${PREFIX}autoquest\` to turn back on.`));
+        await replyFn({ components: [c], flags: MessageFlags.IsComponentsV2 });
+        return;
+    }
+    if (!tokenStore.has(userId)) {
+        const c = new ContainerBuilder().setAccentColor(0xED4245);
+        c.addTextDisplayComponents(new TextDisplayBuilder().setContent(`# ❌ ── TOKEN REQUIRED ── ❌\n> *You need to link your token before enabling Auto-Quest.*\n- **Use \`${PREFIX}link\` first**, then enable autoquest.`));
+        await replyFn({ components: [c], flags: MessageFlags.IsComponentsV2 });
+        return;
+    }
+    enableAutoquest(userId);
+    const c = new ContainerBuilder().setAccentColor(0x57F287);
+    c.addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+            `# ⚡ ── AUTO-QUEST ACTIVATED! ── ⚡\n\n` +
+            `> ✨ *Every new Discord quest that drops will now be **automatically completed** for you in the background!*\n\n` +
+            `### 📬 **Notification:**\n` +
+            `- You will receive a DM summary once each quest finishes.\n\n` +
+            `-# 💡 Keep token fresh with \`${PREFIX}tokencheck\`.`,
+        ),
+    );
+    await replyFn({ components: [c], flags: MessageFlags.IsComponentsV2 });
+}
+
 // ── Slash + Prefix exports ─────────────────────────────────────────────────
 
 export const questCmd = {
@@ -661,41 +637,15 @@ export const tokenCheckCmd = {
     },
 };
 
-export const newQuestCmd = {
-    data: new SlashCommandBuilder().setName('newquest').setDescription('Check newly dropped quests'),
-    prefix: 'newquest',
-    async execute(interaction, client) {
-        await interaction.deferReply();
-        await runNewQuest(interaction.user.id, client.tokenStore, (opts) => interaction.followUp(opts));
-    },
-    async prefixExecute(message, _args, client) {
-        await runNewQuest(message.author.id, client.tokenStore, (opts) => message.channel.send(opts));
-    },
-};
-
-// ── Added both autoquest and updatesque so either command works seamlessly ──
-
 export const autoquestCmd = {
-    data: new SlashCommandBuilder().setName('autoquest').setDescription('Enable or disable auto-quest background execution'),
+    data: new SlashCommandBuilder().setName('autoquest').setDescription('Auto-complete every new quest the moment it drops'),
     prefix: 'autoquest',
     async execute(interaction, client) {
         await interaction.deferReply({ flags: 64 });
-        await runUpdateSqueToggle(interaction.user.id, client.tokenStore, (opts) => interaction.editReply(opts));
+        await runAutoquestToggle(interaction.user.id, client.tokenStore, (opts) => interaction.editReply(opts));
     },
     async prefixExecute(message, _args, client) {
-        await runUpdateSqueToggle(message.author.id, client.tokenStore, (opts) => message.reply(opts));
-    },
-};
-
-export const updateSqueCmd = {
-    data: new SlashCommandBuilder().setName('updatesque').setDescription('Enable DM notifications/auto-solve for new quests'),
-    prefix: 'updatesque',
-    async execute(interaction, client) {
-        await interaction.deferReply({ flags: 64 });
-        await runUpdateSqueToggle(interaction.user.id, client.tokenStore, (opts) => interaction.editReply(opts));
-    },
-    async prefixExecute(message, _args, client) {
-        await runUpdateSqueToggle(message.author.id, client.tokenStore, (opts) => message.reply(opts));
+        await runAutoquestToggle(message.author.id, client.tokenStore, (opts) => message.reply(opts));
     },
 };
 
@@ -805,7 +755,7 @@ export const unlinkCmd = {
     },
 };
 
-// ── Modal Submit Handler ───────────────────────────────────────────────────
+// ── Modal Submit Handler (called from interactionCreate) ───────────────────
 export async function handleLinkModal(interaction, client) {
     const ts = client.tokenStore;
     const raw = interaction.fields.getTextInputValue('link_token_input');
@@ -851,11 +801,12 @@ export async function handleLinkModal(interaction, client) {
     await interaction.editReply({ components: [c], flags: MessageFlags.IsComponentsV2 });
 }
 
+// ── Button: link_prompt handler (called from interactionCreate) ────────────
 export async function handleLinkPromptButton(interaction) {
     await interaction.showModal(buildLinkModal());
 }
 
-// ── AutoQuest runner ───────────────────────────────────────────────────────
+// ── AutoQuest runner (called from questWatcher) ────────────────────────────
 export async function runAutoquestForUser(userId, quest, tokenStore, discordClient) {
     const token = tokenStore.get(userId);
     if (!token) { disableAutoquest(userId); return; }
@@ -913,7 +864,7 @@ export async function runAutoquestForUser(userId, quest, tokenStore, discordClie
     }
 }
 
-// ── Select Menu & Button Handlers ──────────────────────────────────────────
+// ── Select Menu & Button Handlers (called from interactionCreate) ──────────
 
 export async function handleSelectMenu(interaction, client) {
     const userId = interaction.user.id;
@@ -955,7 +906,7 @@ export async function handleSelectMenu(interaction, client) {
             return;
         }
 
-        const claimed = await manager.claimRewards(log).catch(() => 0);
+            const claimed = await manager.claimRewards(log).catch(() => 0);
         await progressMsg.edit(buildQuestInfoCard(quest, 'done', claimed)).catch(() => {});
 
     } catch (err) {
