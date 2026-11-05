@@ -11,15 +11,26 @@ import { writeFileSync, existsSync } from 'fs';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = dirname(__filename);
 
-// Render ke liye ek chota sa dummy server taaki port open rahe
+// --- RENDER KEEP-ALIVE & WEBHOOK SERVER ---
 const server = http.createServer((req, res) => {
-    res.writeHead(200, { 'Content-Type': 'text/plain' });
-    res.end('Bot is alive and running!\n');
+    // Webhook ya health check requests ke liye basic handling
+    if (req.method === 'POST') {
+        let body = '';
+        req.on('data', chunk => { body += chunk; });
+        req.on('end', () => {
+            console.log('[WEBHOOK] Received webhook payload:', body);
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ success: true, message: 'Webhook received!' }));
+        });
+    } else {
+        res.writeHead(200, { 'Content-Type': 'text/plain' });
+        res.end('Bot is alive and running!\n');
+    }
 });
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    console.log(`HTTP server is listening on port ${PORT}`);
+    console.log(`HTTP server & webhook listener is listening on port ${PORT}`);
 });
 
 const col = {
@@ -54,7 +65,24 @@ if (!existsSync('tokens.json'))    writeFileSync('tokens.json', '{}');
 if (!existsSync('autoquest.json')) writeFileSync('autoquest.json', '[]');
 
 banner();
-await deployCommands(TOKEN, process.env.DISCORD_CLIENT_ID);
+
+// --- AUTOMATIC CLIENT ID RESOLUTION FOR SLASH COMMANDS ---
+let clientId = process.env.DISCORD_CLIENT_ID || process.env.CLIENT_ID;
+if (!clientId) {
+    try {
+        const payload = JSON.parse(Buffer.from(TOKEN.split('.')[0], 'base64').toString());
+        clientId = payload.id;
+        console.log(`[SlashCmds] Auto-detected Client ID from token: ${clientId}`);
+    } catch (e) {
+        console.error('[SlashCmds] Failed to auto-detect Client ID from token.');
+    }
+}
+
+if (clientId) {
+    await deployCommands(TOKEN, clientId);
+} else {
+    console.error('[SlashCmds] ✗ Could not deploy commands: Missing Client ID.');
+}
 
 const client = new Client({
     intents: [
@@ -73,13 +101,11 @@ client.tokenStore     = makeTokenStore(TOKEN);
 const commandFiles = readdirSync(join(__dirname, 'commands')).filter(f => f.endsWith('.js'));
 for (const file of commandFiles) {
     const mod = await import(pathToFileURL(join(__dirname, 'commands', file)).href);
-    // Single default export
     if (mod.default) {
         const cmd = mod.default;
         if (cmd?.data)   client.commands.set(cmd.data.name, cmd);
         if (cmd?.prefix) client.prefixCommands.set(cmd.prefix, cmd);
     }
-    // Named exports (questCommands.js has multiple)
     for (const [key, cmd] of Object.entries(mod)) {
         if (key === 'default' || key === 'makeTokenStore' || key === 'handleLinkModal' || key === 'handleLinkPromptButton' || key === 'runAutoquestForUser') continue;
         if (cmd?.data)   client.commands.set(cmd.data.name, cmd);
@@ -98,7 +124,6 @@ for (const file of eventFiles) {
     }
 }
 
-// Bot ready event par rotating status set karne ke liye
 client.once('ready', () => {
     console.log(`[READY] Bot successfully logged in as ${client.user.tag}`);
     
@@ -108,10 +133,8 @@ client.once('ready', () => {
     ];
 
     let i = 0;
-    // Pehla status turant set karein
     client.user.setActivity(statuses[0].name, { type: statuses[0].type });
 
-    // Har 10 seconds mein status rotate hoga
     setInterval(() => {
         i = (i + 1) % statuses.length;
         const current = statuses[i];
