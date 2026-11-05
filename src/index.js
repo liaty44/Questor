@@ -98,14 +98,25 @@ for (const file of eventFiles) {
     }
 }
 
-// Bot ready event par status set karne ke liye
+// Bot ready event par rotating status set karne ke liye
 client.once('ready', () => {
     console.log(`[READY] Bot successfully logged in as ${client.user.tag}`);
     
-    // Watching status set kar diya hai
-    client.user.setActivity('.gg/spike.lol', { 
-        type: ActivityType.Watching 
-    });
+    const statuses = [
+        { name: '.gg/spike.lol', type: ActivityType.Watching },
+        { name: '.help', type: ActivityType.Listening },
+    ];
+
+    let i = 0;
+    // Pehla status turant set karein
+    client.user.setActivity(statuses[0].name, { type: statuses[0].type });
+
+    // Har 10 seconds mein status rotate hoga
+    setInterval(() => {
+        i = (i + 1) % statuses.length;
+        const current = statuses[i];
+        client.user.setActivity(current.name, { type: current.type });
+    }, 10000);
 });
 
 client.login(TOKEN);
