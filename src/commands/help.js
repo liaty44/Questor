@@ -36,7 +36,7 @@ function buildHelp(user, client) {
         new SectionBuilder()
             .addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(
-                    `### 🤖 XEON DEV QUESTER\n-# Hey **${user.username}**, here's everything I can do`,
+                    `### 🤖 Spike.lol QUESTER\n-# Hey **${user.username}**, here's everything I can do`,
                 ),
             )
             .setThumbnailAccessory(new ThumbnailBuilder().setURL(botAvatar)),
