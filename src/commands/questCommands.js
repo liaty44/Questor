@@ -290,7 +290,7 @@ function buildQuestInfoCard(quest, phase, claimed = 0, failReason = '', currentP
     return { components: [c], flags: MessageFlags.IsComponentsV2 };
 }
 
-// ── NEW: .newquest Handler ─────────────────────────────────────────────────
+// ── Handlers: .newquest & .updatesque ─────────────────────────────────────
 async function runNewQuest(userId, tokenStore, send) {
     const token = tokenStore.get(userId);
     if (!token) { await send(buildLinkPrompt()); return; }
@@ -319,7 +319,6 @@ async function runNewQuest(userId, tokenStore, send) {
     }
 }
 
-// ── NEW: .updatesque Handler (Toggle DM notification & auto-solve) ──────────
 async function runUpdateSqueToggle(userId, tokenStore, replyFn) {
     if (!isVip(userId)) {
         const c = new ContainerBuilder().setAccentColor(0xED4245);
@@ -832,7 +831,7 @@ export async function handleLinkModal(interaction, client) {
         new TextDisplayBuilder().setContent(
             `# ⚡ ── TOKEN SUCCESSFULLY LINKED! ── ⚡\n\n` +
             `> 👤 **Account:** \`${accountName}\`\n\n` +
-            `### ✨ *You can now use \`/quest\`, \`/questall\`, and \`/questlist\` without any issues!*`,
+            `### ✨ *You can now use \`/quest\`, \`${PREFIX}questall\`, and \`${PREFIX}questlist\` without any issues!*`,
         ),
     );
     await interaction.editReply({ components: [c], flags: MessageFlags.IsComponentsV2 });
