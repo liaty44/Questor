@@ -6,15 +6,18 @@ import {
   SeparatorSpacingSize,
   SectionBuilder,
   ThumbnailBuilder,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
   MessageFlags,
 } from 'discord.js';
 import { getEmoji } from '../handlers/emoji.js';
 
 function statusLabel(ws) {
-  if (ws < 80)  return { text: 'Blazing fast — no complaints here', color: 0x57F287 };
-  if (ws < 150) return { text: 'Solid connection, all good', color: 0x57F287 };
+  if (ws < 80)  return { text: 'Blazing fast — MOONLIT is running smoothly', color: 0x57F287 };
+  if (ws < 150) return { text: 'Solid connection, all systems normal', color: 0x57F287 };
   if (ws < 250) return { text: 'A little sluggish, but holding up', color: 0xFEE75C };
-  return { text: 'Running hot — might be a hiccup', color: 0xED4245 };
+  return { text: 'Running hot — might be a small hiccup', color: 0xED4245 };
 }
 
 function buildPingCard(ws, rest, avatar) {
@@ -25,7 +28,7 @@ function buildPingCard(ws, rest, avatar) {
     new SectionBuilder()
       .addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-          `# ${getEmoji('ping')} Latency Check\n-# ${text}`,
+          `# ${getEmoji('ping')} MOONLIT Latency Check\n-# ${text}`,
         ),
       )
       .setThumbnailAccessory(new ThumbnailBuilder().setURL(avatar)),
@@ -47,17 +50,31 @@ function buildPingCard(ws, rest, avatar) {
 
   c.addTextDisplayComponents(
     new TextDisplayBuilder().setContent(
-      `-# ${ws < 150 ? getEmoji('success') + ' All systems nominal' : ws < 250 ? getEmoji('warning') + ' Slight delay detected' : getEmoji('error') + ' Elevated latency — keep an eye on it'}`,
+      `-# ${ws < 150 ? getEmoji('success') + ' MOONLIT Core Systems Nominal' : ws < 250 ? getEmoji('warning') + ' Slight delay detected' : getEmoji('error') + ' Elevated latency — monitoring active'}`,
     ),
   );
 
-  return { components: [c], flags: MessageFlags.IsComponentsV2 };
+  // Interactive buttons row for modern aesthetic and UX
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId('ping_refresh')
+      .setLabel('Refresh Ping')
+      .setStyle(ButtonStyle.Secondary)
+      .setEmoji('🔄'),
+    new ButtonBuilder()
+      .setCustomId('help_menu')
+      .setLabel('MOONLIT Help')
+      .setStyle(ButtonStyle.Primary)
+      .setEmoji('✨')
+  );
+
+  return { components: [c, row], flags: MessageFlags.IsComponentsV2 };
 }
 
 export default {
   data: new SlashCommandBuilder()
     .setName('ping')
-    .setDescription('Check bot latency'),
+    .setDescription('Check MOONLIT bot latency'),
   prefix: 'ping',
 
   async execute(interaction) {
