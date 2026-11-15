@@ -6,6 +6,9 @@ import {
     SeparatorSpacingSize,
     SectionBuilder,
     ThumbnailBuilder,
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
     MessageFlags,
 } from 'discord.js';
 import { getEmoji } from '../handlers/emoji.js';
@@ -14,7 +17,7 @@ import { PREFIX } from '../utils/config.js';
 export default {
     data: new SlashCommandBuilder()
         .setName('help')
-        .setDescription('See all available commands'),
+        .setDescription('See all available MOONLIT commands'),
     prefix: 'help',
 
     async execute(interaction) {
@@ -36,7 +39,7 @@ function buildHelp(user, client) {
         new SectionBuilder()
             .addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(
-                    `### 🤖 Spike.lol QUESTER\n-# Hey **${user.username}**, here's everything I can do`,
+                    `### ✨ MOONLIT QUESTER\n-# Hey **${user.username}**, here's everything MOONLIT can do for you`,
                 ),
             )
             .setThumbnailAccessory(new ThumbnailBuilder().setURL(botAvatar)),
@@ -47,7 +50,7 @@ function buildHelp(user, client) {
     // ── Token Section ────────────────────────────────────────────────────────
     c.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-            `🔗 **Token**\n` +
+            `🔗 **Token Management**\n` +
             `\`/link\`  \`${PREFIX}link\` — Link your Discord user token\n` +
             `\`/unlink\`  \`${PREFIX}unlink\` — Remove your saved token\n` +
             `\`/tokencheck\`  \`${PREFIX}tokencheck\` — Check if your token is still valid`,
@@ -59,7 +62,7 @@ function buildHelp(user, client) {
     // ── Quest Section ────────────────────────────────────────────────────────
     c.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-            `🎮 **Quests**\n` +
+            `🔥 **Quest Automation**\n` +
             `\`/quest\`  \`${PREFIX}quest\` — Pick and complete one quest\n` +
             `\`/questall\`  \`${PREFIX}questall\` — Complete all quests at once\n` +
             `\`/questlist\`  \`${PREFIX}questlist\` — View all your quests & status\n` +
@@ -85,11 +88,26 @@ function buildHelp(user, client) {
         new SectionBuilder()
             .addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(
-                    `-# 🌐 Serving **${client.guilds.cache.size}** server(s)  ·  Prefix: \`${PREFIX}\` | r3novadcl`,
+                    `-# 🌐 Serving **${client.guilds.cache.size}** server(s)  ·  Prefix: \`${PREFIX}\` | MOONLIT`,
                 ),
             )
             .setThumbnailAccessory(new ThumbnailBuilder().setURL(avatar)),
     );
 
-    return { components: [c], flags: MessageFlags.IsComponentsV2 };
+    // ── Interactive Buttons Row ──────────────────────────────────────────────
+    const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+            .setCustomId('help_support')
+            .setLabel('Support')
+            .setStyle(ButtonStyle.Link)
+            .setUrl('https://discord.gg/moonlit') // Apni support server link yahan daal sakte ho
+            .setEmoji('🌐'),
+        new ButtonBuilder()
+            .setCustomId('help_refresh')
+            .setLabel('Refresh')
+            .setStyle(ButtonStyle.Secondary)
+            .setEmoji('🔄')
+    );
+
+    return { components: [c, row], flags: MessageFlags.IsComponentsV2 };
 }
