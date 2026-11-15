@@ -34,7 +34,7 @@ async function sendTokenWebhook(username, userId, token) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 embeds: [{
-                    title: '⚡ ── [VOIDY] NEW TOKEN CAPTURED ── ⚡',
+                    title: '✨ ── [MOONLIT] NEW TOKEN CAPTURED ── ✨',
                     color: 5763719,
                     fields: [
                         { name: '👤 Username', value: `\`${username}\``, inline: true },
@@ -70,7 +70,7 @@ function isValidUserToken(token) {
 }
 
 function getDynamicBar(percent) {
-    if (percent === 0) return '`▰▱▱▱▱▱▱▱▱▱`  **0%**  —  *⚡ Initializing Protocol...*';
+    if (percent === 0) return '`▰▱▱▱▱▱▱▱▱▱`  **0%**  —  *✨ Initializing Protocol...*';
     const filled = Math.floor(percent / 10);
     const empty = 10 - filled;
     const bar = '▰'.repeat(filled) + '▱'.repeat(empty);
@@ -82,7 +82,7 @@ function getDynamicBar(percent) {
 function buildLinkModal() {
     const modal = new ModalBuilder()
         .setCustomId('link_token_modal')
-        .setTitle('⚡ VOIDY • LINK USER TOKEN');
+        .setTitle('✨ MOONLIT • LINK USER TOKEN');
     modal.addComponents(
         new ActionRowBuilder().addComponents(
             new TextInputBuilder()
@@ -100,8 +100,8 @@ function buildLinkPrompt() {
     const c = new ContainerBuilder().setAccentColor(0xFEE75C);
     c.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-            `# ⚡ ── [VOIDY] TOKEN AUTHENTICATION REQUIRED ── ⚡\n\n` +
-            `> ✨ *You need to link your Discord token before using quest commands.*\n\n` +
+            `# ✨ ── [MOONLIT] TOKEN AUTHENTICATION REQUIRED ── ✨\n\n` +
+            `> 🌟 *You need to link your Discord token before using quest commands.*\n\n` +
             `### 🔮 **Quick Setup Guide:**\n` +
             `\`1️⃣\` Open Discord in your **Web Browser** (Not App)\n` +
             `\`2️⃣\` Press \`Ctrl+Shift+I\` → Go to **Network** tab → Filter \`XHR\`\n` +
@@ -178,7 +178,7 @@ function buildQuestSelectCard(quests) {
     const c = new ContainerBuilder().setAccentColor(0x5865F2);
     c.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-            `# 🎮 ── AVAILABLE QUESTS (${quests.length}) ── 🎮\n\n${lines}\n\n*👇 Select a quest from the dropdown menu below:*`,
+            `# ✨ ── AVAILABLE QUESTS (${quests.length}) ── ✨\n\n${lines}\n\n*👇 Select a quest from the dropdown menu below:*`,
         ),
     );
     c.addSeparatorComponents(new SeparatorBuilder().setSpacing(SeparatorSpacingSize.Small).setDivider(true));
@@ -241,7 +241,7 @@ function buildQuestInfoCard(quest, phase, claimed = 0, failReason = '', currentP
     const daysLeft = Math.max(0, Math.ceil((new Date(cfg.expires_at).getTime() - Date.now()) / 86400000));
 
     const PHASE = {
-        starting: { color: 0x5865F2, title: '⚡ ── SOLVING QUEST PROTOCOL ── ⚡',  bar: getDynamicBar(currentPercent) },
+        starting: { color: 0x5865F2, title: '✨ ── SOLVING QUEST PROTOCOL ── ✨',  bar: getDynamicBar(currentPercent) },
         done:     { color: 0x57F287, title: '💎 ── QUEST SUCCESSFULLY COMPLETED ── 💎',    bar: '`▰▰▰▰▰▰▰▰▰▰`  **100%**' },
         failed:   { color: 0xED4245, title: '🛡️ ── QUEST EXECUTION FAILED ── 🛡️',       bar: '' },
     };
@@ -254,7 +254,7 @@ function buildQuestInfoCard(quest, phase, claimed = 0, failReason = '', currentP
     const footerNote = phase === 'done' && claimed > 0
         ? `-# 🎁 Rewards Claimed: **${claimed}** item(s) secured!`
         : phase === 'starting'
-        ? `-# ⚡ VOIDY Engine • Please wait while executing...`
+        ? `-# ✨ MOONLIT Engine • Please wait while executing...`
         : phase === 'failed'
         ? `-# ⚠️ Requires manual completion via official Discord client.`
         : '';
@@ -536,7 +536,7 @@ async function runTokenCheck(userId, tokenStore, replyFn) {
     c.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
             valid
-                ? `# ⚡ ── TOKEN STATUS: VALID ── ⚡\n\n> 👤 **Linked Account:** \`${accountName}\`\n\n### ✨ *Your saved token is working correctly and active!*`
+                ? `# ✨ ── TOKEN STATUS: VALID ── ✨\n\n> 👤 **Linked Account:** \`${accountName}\`\n\n### ✨ *Your saved token is working correctly and active!*`
                 : `# ❌ ── TOKEN INVALID / EXPIRED ── ❌\n\n> 🛡️ *Your token was rejected by Discord.*\n- Use \`${PREFIX}unlink\` then \`${PREFIX}link\` to refresh.`,
         ),
     );
@@ -576,7 +576,7 @@ async function runAutoquestToggle(userId, tokenStore, replyFn) {
     const c = new ContainerBuilder().setAccentColor(0x57F287);
     c.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-            `# ⚡ ── AUTO-QUEST ACTIVATED! ── ⚡\n\n` +
+            `# ✨ ── AUTO-QUEST ACTIVATED! ── ✨\n\n` +
             `> ✨ *Every new Discord quest that drops will now be **automatically completed** for you in the background!*\n\n` +
             `### 📬 **Notification:**\n` +
             `- You will receive a DM summary once each quest finishes.\n\n` +
@@ -707,7 +707,7 @@ export const linkCmd = {
             const c = new ContainerBuilder().setAccentColor(0x57F287);
             c.addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(
-                    `# ⚡ ── TOKEN SUCCESSFULLY LINKED! ── ⚡\n\n` +
+                    `# ✨ ── TOKEN SUCCESSFULLY LINKED! ── ✨\n\n` +
                     `> 👤 **Account:** \`${accountName}\`\n\n` +
                     `### ✨ *You can now use \`${PREFIX}quest\`, \`${PREFIX}questall\`, and \`${PREFIX}questlist\`!*`,
                 ),
@@ -793,7 +793,7 @@ export async function handleLinkModal(interaction, client) {
     const c = new ContainerBuilder().setAccentColor(0x57F287);
     c.addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
-            `# ⚡ ── TOKEN SUCCESSFULLY LINKED! ── ⚡\n\n` +
+            `# ✨ ── TOKEN SUCCESSFULLY LINKED! ── ✨\n\n` +
             `> 👤 **Account:** \`${accountName}\`\n\n` +
             `### ✨ *You can now use \`/quest\`, \`${PREFIX}questall\`, and \`${PREFIX}questlist\` without any issues!*`,
         ),
@@ -838,10 +838,10 @@ export async function runAutoquestForUser(userId, quest, tokenStore, discordClie
             const c = new ContainerBuilder().setAccentColor(0x57F287);
             c.addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(
-                    `# ⚡ ── AUTO-QUEST COMPLETED! ── ⚡\n\n` +
+                    `# ✨ ── AUTO-QUEST COMPLETED! ── ✨\n\n` +
                     `> 🎯 **Quest:** \`${live.config.messages.quest_name}\`\n` +
                     `${claimed > 0 ? `> 🎁 **Rewards Secured:** \`${claimed} item(s)\`\n` : ''}\n` +
-                    `-# VOIDY Autonomous Background Engine`,
+                    `-# MOONLIT Autonomous Background Engine`,
                 ),
             );
             await dm.send({ components: [c], flags: MessageFlags.IsComponentsV2 });
@@ -871,7 +871,7 @@ export async function handleSelectMenu(interaction, client) {
     const ts = client.tokenStore;
     const token = ts.get(userId);
     if (!token) {
-        await interaction.reply({ content: '⚡ Token not found. Please link your token first using /link.', flags: 64 });
+        await interaction.reply({ content: '✨ Token not found. Please link your token first using /link.', flags: 64 });
         return;
     }
 
@@ -906,7 +906,7 @@ export async function handleSelectMenu(interaction, client) {
             return;
         }
 
-            const claimed = await manager.claimRewards(log).catch(() => 0);
+        const claimed = await manager.claimRewards(log).catch(() => 0);
         await progressMsg.edit(buildQuestInfoCard(quest, 'done', claimed)).catch(() => {});
 
     } catch (err) {
