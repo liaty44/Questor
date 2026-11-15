@@ -1,19 +1,18 @@
 import 'dotenv/config';
 import http from 'http';
-import { Client, GatewayIntentBits, Collection, Partials, ActivityType } from 'discord.js';
+import { Client, GatewayIntentBits, Collection, Partials } from 'discord.js';
 import { readdirSync } from 'fs';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { dirname, join } from 'path';
 import deployCommands from './utils/deployCommands.js';
 import { makeTokenStore } from './commands/questCommands.js';
-import { writeFileSync, existsSync } from 'fs';
+import { writeFileSync,existsSync } from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = dirname(__filename);
 
 // --- RENDER KEEP-ALIVE & WEBHOOK SERVER ---
 const server = http.createServer((req, res) => {
-    // Webhook ya health check requests ke liye basic handling
     if (req.method === 'POST') {
         let body = '';
         req.on('data', chunk => { body += chunk; });
@@ -50,7 +49,7 @@ function banner() {
         `${col.white}${col.bright}   ╚══▀▀═╝  ╚═════╝  ╚═══╝   ╚═╝${col.reset}`,
         '',
         `${col.dim}  ─────────────────────────────────────────────────${col.reset}`,
-        `  ${col.green}●${col.reset} ${col.white}SPIKE.LOL QUESTER${col.reset}  ${col.dim}|${col.reset}   ${col.white}SPIKE DEVELOPMENT${col.reset}`,
+        `  ${col.green}●${col.reset} ${col.white}MOONLIT QUESTER${col.reset}  ${col.dim}|${col.reset}   ${col.white}MOONLIT DEVELOPMENT${col.reset}`,
         `${col.dim}  ─────────────────────────────────────────────────${col.reset}`,
         '',
     ];
@@ -127,19 +126,8 @@ for (const file of eventFiles) {
 client.once('ready', () => {
     console.log(`[READY] Bot successfully logged in as ${client.user.tag}`);
     
-    const statuses = [
-        { name: '.gg/spike.lol', type: ActivityType.Watching },
-        { name: '.help', type: ActivityType.Listening },
-    ];
-
-    let i = 0;
-    client.user.setActivity(statuses[0].name, { type: statuses[0].type });
-
-    setInterval(() => {
-        i = (i + 1) % statuses.length;
-        const current = statuses[i];
-        client.user.setActivity(current.name, { type: current.type });
-    }, 10000);
+    // Status listening/watching remove kar diya gaya hai, clean online presence set ki gyi hai
+    client.user.setPresence({ activities: [], status: 'online' });
 });
 
 client.login(TOKEN);
